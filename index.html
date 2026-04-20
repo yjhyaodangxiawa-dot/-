@@ -3,376 +3,1164 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>计时器</title>
+  <title>清晨竹林工时站</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    :root {
+      --sky-1: #edf7ef;
+      --sky-2: #dcefdc;
+      --sky-3: #b5d7b8;
+      --forest-1: #24563a;
+      --forest-2: #173826;
+      --card: rgba(255, 255, 255, 0.14);
+      --card-strong: rgba(255, 255, 255, 0.18);
+      --line: rgba(255, 255, 255, 0.22);
+      --text: #f7fff8;
+      --muted: rgba(247, 255, 248, 0.76);
+      --deep: #102b1a;
+      --accent: #f3ffd9;
+      --accent-green: #c9ffab;
+      --shadow: 0 26px 80px rgba(8, 28, 17, 0.22);
+      --shadow-soft: 0 12px 30px rgba(8, 28, 17, 0.14);
     }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
 
     body {
+      margin: 0;
       min-height: 100vh;
-      background: linear-gradient(135deg, #0f172a, #111827, #1e293b);
-      color: #fff;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+      font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 18% 12%, rgba(255,255,255,0.86) 0 7%, transparent 8%),
+        radial-gradient(circle at 72% 9%, rgba(255,255,255,0.48) 0 6%, transparent 7%),
+        radial-gradient(circle at 56% 22%, rgba(255,255,255,0.18) 0 12%, transparent 13%),
+        linear-gradient(180deg, var(--sky-1), var(--sky-2) 24%, var(--sky-3) 46%, #5f9a6c 72%, #244a34 100%);
+      position: relative;
+      overflow-x: hidden;
     }
 
-    .container {
+    .mist,
+    .mist::before,
+    .mist::after,
+    .sun-glow {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      content: "";
+    }
+
+    .sun-glow {
+      background: radial-gradient(circle at 50% 10%, rgba(255,248,216,0.85), transparent 22%);
+      filter: blur(22px);
+      z-index: 0;
+    }
+
+    .mist {
+      z-index: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), transparent 42%, rgba(255,255,255,0.06) 82%, transparent);
+      filter: blur(18px);
+    }
+
+    .mist::before {
+      background:
+        radial-gradient(circle at 22% 34%, rgba(255,255,255,0.18), transparent 24%),
+        radial-gradient(circle at 66% 24%, rgba(255,255,255,0.16), transparent 22%),
+        radial-gradient(circle at 48% 62%, rgba(255,255,255,0.12), transparent 22%);
+      animation: fogMove 22s linear infinite alternate;
+    }
+
+    .mist::after {
+      background:
+        linear-gradient(180deg, transparent, rgba(255,255,255,0.08) 38%, transparent 78%),
+        radial-gradient(circle at 82% 54%, rgba(255,255,255,0.09), transparent 20%);
+      animation: fogMove2 30s linear infinite alternate;
+    }
+
+    @keyframes fogMove {
+      from { transform: translateX(-2%) translateY(0); }
+      to { transform: translateX(2.5%) translateY(1.2%); }
+    }
+
+    @keyframes fogMove2 {
+      from { transform: translateX(1%) translateY(-1%); }
+      to { transform: translateX(-2%) translateY(1%); }
+    }
+
+    .bamboo-back,
+    .bamboo-front,
+    .falling-leaves {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .stalk {
+      position: absolute;
+      bottom: -10vh;
+      border-radius: 14px;
+      transform-origin: bottom center;
+      animation: sway 8s ease-in-out infinite;
+    }
+
+    .stalk.back {
+      background: linear-gradient(90deg, rgba(29,75,49,0.56), rgba(100,168,106,0.54) 44%, rgba(26,84,49,0.62));
+      box-shadow: inset 2px 0 0 rgba(255,255,255,0.08), inset -2px 0 0 rgba(0,0,0,0.08);
+      filter: blur(0.4px);
+    }
+
+    .stalk.front {
+      background: linear-gradient(90deg, rgba(20,66,37,0.92), rgba(103,176,106,0.92) 46%, rgba(18,84,44,0.96));
+      box-shadow: inset 2px 0 0 rgba(255,255,255,0.16), inset -2px 0 0 rgba(0,0,0,0.12);
+    }
+
+    .stalk::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      background: repeating-linear-gradient(180deg,
+        transparent 0 82px,
+        rgba(240,255,240,0.28) 82px 86px,
+        transparent 86px 128px);
+    }
+
+    .leaf {
+      position: absolute;
+      height: 16px;
+      border-radius: 100% 0 100% 0 / 100% 0 100% 0;
+      transform-origin: left center;
+      filter: drop-shadow(0 5px 8px rgba(0,0,0,0.12));
+    }
+
+    .leaf.back {
+      background: linear-gradient(90deg, rgba(126,198,118,0.54), rgba(52,122,65,0.58));
+    }
+
+    .leaf.front {
+      background: linear-gradient(90deg, rgba(124,214,116,0.96), rgba(39,123,58,0.98));
+    }
+
+    .fall-leaf {
+      position: absolute;
+      width: 22px;
+      height: 10px;
+      border-radius: 100% 0 100% 0 / 100% 0 100% 0;
+      background: linear-gradient(90deg, rgba(182,245,157,0.66), rgba(46,138,68,0.66));
+      filter: blur(0.2px);
+      animation: leafFall linear infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes sway {
+      0%, 100% { transform: rotate(-1.8deg); }
+      50% { transform: rotate(1.8deg); }
+    }
+
+    @keyframes leafFall {
+      0% { transform: translate3d(0, -12vh, 0) rotate(0deg); opacity: 0; }
+      12% { opacity: 0.72; }
+      100% { transform: translate3d(var(--drift), 115vh, 0) rotate(300deg); opacity: 0; }
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      padding: 26px 16px 40px;
+    }
+
+    .shell {
       width: 100%;
-      max-width: 520px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 24px;
-      padding: 28px;
-      backdrop-filter: blur(14px);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 32px;
-      margin-bottom: 10px;
-    }
-
-    .sub {
-      text-align: center;
-      color: rgba(255, 255, 255, 0.65);
-      font-size: 14px;
-      margin-bottom: 24px;
-    }
-
-    .tabs {
-      display: flex;
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 14px;
-      padding: 6px;
-      margin-bottom: 24px;
-    }
-
-    .tab {
-      flex: 1;
-      border: none;
-      background: transparent;
-      color: rgba(255, 255, 255, 0.72);
-      padding: 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 15px;
-      transition: 0.2s;
-    }
-
-    .tab.active {
-      background: #fff;
-      color: #111827;
-      font-weight: 600;
-    }
-
-    .panel {
-      display: none;
-    }
-
-    .panel.active {
-      display: block;
-    }
-
-    .time {
-      text-align: center;
-      font-size: 54px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      margin: 24px 0;
-      font-family: Consolas, monospace;
-      word-break: break-all;
-    }
-
-    .btns {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    button.action {
-      border: none;
-      padding: 12px 22px;
-      border-radius: 14px;
-      cursor: pointer;
-      font-size: 15px;
-      transition: 0.2s;
-    }
-
-    .primary {
-      background: #ffffff;
-      color: #111827;
-      font-weight: 600;
-    }
-
-    .secondary {
-      background: rgba(255, 255, 255, 0.14);
-      color: #fff;
-    }
-
-    .inputs {
+      max-width: 1280px;
+      margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
+      gap: 20px;
+    }
+
+    .hero {
+      background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(255,255,255,0.10));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      border-radius: 30px;
+      padding: 26px;
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      align-items: flex-start;
       margin-bottom: 18px;
     }
 
-    .input-box label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.72);
+    h1 {
+      margin: 0;
+      font-size: 38px;
+      letter-spacing: 1px;
+      text-shadow: 0 4px 16px rgba(0,0,0,0.12);
     }
 
-    .input-box input {
-      width: 100%;
-      height: 46px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+    .desc {
+      margin-top: 10px;
+      max-width: 720px;
+      line-height: 1.8;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tabs {
+      display: inline-flex;
+      gap: 8px;
+      padding: 6px;
+      border-radius: 18px;
+      background: rgba(11, 42, 23, 0.18);
+      border: 1px solid rgba(255,255,255,0.16);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .tab,
+    button.action,
+    button.secondary,
+    button.ghost,
+    button.danger,
+    button.small {
+      border: 0;
+      cursor: pointer;
+      transition: 0.18s ease;
+      font-family: inherit;
+    }
+
+    .tab {
+      background: transparent;
+      color: var(--text);
+      padding: 10px 18px;
+      border-radius: 14px;
+      font-size: 14px;
+    }
+
+    .tab.active {
+      background: rgba(243,255,217,0.96);
+      color: #14301c;
+      font-weight: 700;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.10));
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: var(--shadow-soft);
+      min-height: 100%;
+    }
+
+    .card-title {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .hero-time {
+      font-family: Consolas, monospace;
+      font-size: 62px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin: 8px 0 18px;
+      word-break: break-all;
+      text-shadow: 0 3px 14px rgba(0,0,0,0.14);
+    }
+
+    .money {
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .money small {
+      font-size: 15px;
+      opacity: 0.88;
+      margin-left: 8px;
+      font-weight: 500;
+    }
+
+    .status {
+      line-height: 1.8;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    button.action,
+    button.secondary,
+    button.ghost,
+    button.danger,
+    button.small {
+      border-radius: 16px;
+      padding: 12px 18px;
+      font-size: 15px;
+    }
+
+    .action {
+      background: rgba(243,255,217,0.98);
+      color: #15311d;
+      font-weight: 700;
+    }
+
+    .secondary {
+      background: rgba(26, 83, 47, 0.44);
+      color: white;
+    }
+
+    .ghost {
+      background: rgba(255,255,255,0.12);
+      color: white;
+    }
+
+    .danger {
+      background: rgba(109, 34, 34, 0.5);
+      color: #fff6f6;
+    }
+
+    .small {
+      padding: 8px 12px;
+      font-size: 13px;
       border-radius: 12px;
-      background: rgba(0, 0, 0, 0.18);
-      color: #fff;
-      text-align: center;
-      font-size: 18px;
+      background: rgba(255,255,255,0.10);
+      color: white;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(0); }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .row2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .row3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .field input,
+    .memo-input,
+    .memo-textarea {
+      width: 100%;
       outline: none;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(11, 42, 24, 0.22);
+      color: white;
+      border-radius: 14px;
+      padding: 13px 14px;
+      font-size: 15px;
+      font-family: inherit;
+    }
+
+    .memo-textarea {
+      min-height: 190px;
+      resize: vertical;
+      line-height: 1.8;
+    }
+
+    .field input::placeholder,
+    .memo-input::placeholder,
+    .memo-textarea::placeholder {
+      color: rgba(255,255,255,0.44);
+    }
+
+    .mini-cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .mini-card {
+      background: rgba(10, 43, 23, 0.18);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 18px;
+      padding: 16px;
+    }
+
+    .mini-title {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .mini-value {
+      font-size: 24px;
+      font-weight: 700;
     }
 
     .progress-wrap {
-      width: 100%;
-      height: 10px;
-      background: rgba(255, 255, 255, 0.12);
+      margin-top: 18px;
+      height: 12px;
       border-radius: 999px;
+      background: rgba(255,255,255,0.14);
       overflow: hidden;
-      margin-top: 20px;
+      display: none;
     }
 
     .progress {
       height: 100%;
       width: 0%;
-      background: #ffffff;
-      transition: width 0.3s linear;
+      background: linear-gradient(90deg, rgba(201,255,171,0.96), rgba(243,255,217,0.96));
+      transition: width 0.25s linear;
     }
 
-    .tip {
-      text-align: center;
+    .countdown-panel { display: none; }
+    .countdown-panel.active { display: grid; }
+
+    .salary-box,
+    .sub-note {
+      color: var(--muted);
       font-size: 14px;
-      color: rgba(255, 255, 255, 0.65);
-      margin-top: 14px;
+      line-height: 1.8;
     }
 
-    @media (max-width: 520px) {
-      .container {
-        padding: 20px;
-      }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.08fr 0.92fr;
+      gap: 20px;
+    }
 
-      .time {
-        font-size: 40px;
-      }
+    .records-head,
+    .memo-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
 
-      .inputs {
+    .records-list,
+    .memo-list {
+      display: grid;
+      gap: 12px;
+      max-height: 420px;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .record-item,
+    .memo-item {
+      background: rgba(8, 37, 20, 0.18);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .record-top,
+    .memo-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .record-badge,
+    .memo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #e8ffe8;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.14);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
+    .record-money {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 4px;
+    }
+
+    .record-meta,
+    .memo-body,
+    .empty {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      word-break: break-word;
+    }
+
+    .empty {
+      padding: 20px 0;
+    }
+
+    .memo-actions,
+    .record-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: rgba(255,255,255,0.72);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    @media (max-width: 1080px) {
+      .hero-grid,
+      .main-grid {
         grid-template-columns: 1fr;
       }
+    }
+
+    @media (max-width: 720px) {
+      .hero-time { font-size: 44px; }
+      .money { font-size: 32px; }
+      .row2,
+      .row3,
+      .mini-cards { grid-template-columns: 1fr; }
+      .hero,
+      .card { padding: 18px; }
+      h1 { font-size: 30px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>计时器</h1>
-    <div class="sub">支持正计时与倒计时</div>
+  <div class="sun-glow"></div>
+  <div class="mist"></div>
+  <div class="bamboo-back" id="bambooBack"></div>
+  <div class="bamboo-front" id="bambooFront"></div>
+  <div class="falling-leaves" id="fallingLeaves"></div>
 
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('stopwatch')">正计时</button>
-      <button class="tab" onclick="switchTab('countdown')">倒计时</button>
-    </div>
-
-    <div id="stopwatch" class="panel active">
-      <div id="stopwatchDisplay" class="time">00:00:00.00</div>
-      <div class="btns">
-        <button id="startPauseBtn" class="action primary" onclick="toggleStopwatch()">开始</button>
-        <button class="action secondary" onclick="resetStopwatch()">重置</button>
-      </div>
-      <div class="tip">适合学习、工作、运动计时</div>
-    </div>
-
-    <div id="countdown" class="panel">
-      <div class="inputs">
-        <div class="input-box">
-          <label>时</label>
-          <input id="hours" type="number" min="0" value="0" />
+  <div class="wrap">
+    <div class="shell">
+      <section class="hero">
+        <div class="hero-top">
+          <div>
+            <h1>清晨竹林 · 工时与生活记录站</h1>
+            <div class="desc">
+              更真实的竹林清晨氛围版本来了。你可以在这里一边正计时、一边看工资随着时间增长，也可以切换到倒计时。除此之外，还新增了记录区和记事本：工时可以保存、查看、删除，文字也可以随手写下来并单独保存。
+            </div>
+          </div>
+          <div class="tabs">
+            <button class="tab active" data-mode="work">上班计时</button>
+            <button class="tab" data-mode="countdown">倒计时</button>
+          </div>
         </div>
-        <div class="input-box">
-          <label>分</label>
-          <input id="minutes" type="number" min="0" value="5" />
+
+        <div class="hero-grid">
+          <div class="card">
+            <div class="card-title" id="mainLabel">当前工时</div>
+            <div class="hero-time" id="mainDisplay">00:00:00.00</div>
+            <div class="money" id="moneyDisplay">¥0.00 <small>工资随时间上升</small></div>
+            <div class="status" id="statusText">状态：未开始。点击“开始上班”后，工时与工资会一起增长。</div>
+            <div class="progress-wrap" id="progressWrap">
+              <div class="progress" id="progressBar"></div>
+            </div>
+            <div class="actions">
+              <button class="action" id="mainBtn">开始上班</button>
+              <button class="secondary" id="resetBtn">重置</button>
+              <button class="ghost" id="saveRecordBtn">保存本次记录</button>
+              <button class="ghost" id="presetBtn">快速设为 35 元/小时</button>
+            </div>
+            <div class="footer-note" id="footerNote">
+              小提示：正计时模式下，工资会根据你设置的时薪实时计算；倒计时模式更适合专注学习、休息或番茄钟。下面的记录区支持保存和删除，记事本支持单独写内容与存档。
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="grid" id="workPanel">
+              <div class="row2">
+                <div class="field">
+                  <label for="hourlyWage">时薪（元/小时）</label>
+                  <input id="hourlyWage" type="number" min="0" step="0.1" value="25" placeholder="例如 25" />
+                </div>
+                <div class="field">
+                  <label for="currencySymbol">货币符号</label>
+                  <input id="currencySymbol" type="text" value="¥" maxlength="3" placeholder="¥" />
+                </div>
+              </div>
+              <div class="mini-cards">
+                <div class="mini-card">
+                  <div class="mini-title">每分钟收入</div>
+                  <div class="mini-value" id="perMinute">¥0.42</div>
+                </div>
+                <div class="mini-card">
+                  <div class="mini-title">每秒收入</div>
+                  <div class="mini-value" id="perSecond">¥0.0069</div>
+                </div>
+              </div>
+              <div class="salary-box">
+                氛围：晨雾、竹影、微风、阳光透林。你可以把这里当成一个轻松的个人娱乐页面，摸鱼、专注、记工时、随手写点东西都可以。
+              </div>
+            </div>
+
+            <div class="grid countdown-panel" id="countdownPanel">
+              <div class="row3">
+                <div class="field">
+                  <label for="cdHour">小时</label>
+                  <input id="cdHour" type="number" min="0" value="0" />
+                </div>
+                <div class="field">
+                  <label for="cdMinute">分钟</label>
+                  <input id="cdMinute" type="number" min="0" value="25" />
+                </div>
+                <div class="field">
+                  <label for="cdSecond">秒</label>
+                  <input id="cdSecond" type="number" min="0" value="0" />
+                </div>
+              </div>
+              <div class="actions" style="margin-top:0;">
+                <button class="action" id="setCountdownBtn">设置倒计时</button>
+                <button class="ghost" id="focus25Btn">番茄钟 25 分钟</button>
+              </div>
+              <div class="mini-cards">
+                <div class="mini-card">
+                  <div class="mini-title">剩余时间</div>
+                  <div class="mini-value" id="remainText">00:25:00</div>
+                </div>
+                <div class="mini-card">
+                  <div class="mini-title">当前进度</div>
+                  <div class="mini-value" id="progressText">0%</div>
+                </div>
+              </div>
+              <div class="sub-note">倒计时结束时会弹出提醒。你也可以把一段计时时间保存到记录里，形成自己的小型工时清单。</div>
+            </div>
+          </div>
         </div>
-        <div class="input-box">
-          <label>秒</label>
-          <input id="seconds" type="number" min="0" value="0" />
+      </section>
+
+      <section class="main-grid">
+        <div class="card">
+          <div class="records-head">
+            <div>
+              <div class="card-title">工时记录</div>
+              <div class="sub-note">点击“保存本次记录”后会出现在这里，可单条删除，也可一键清空。</div>
+            </div>
+            <div class="record-actions">
+              <button class="small" id="saveCurrentRecordBtn">保存当前记录</button>
+              <button class="danger" id="clearRecordsBtn">清空全部记录</button>
+            </div>
+          </div>
+          <div class="records-list" id="recordsList"></div>
         </div>
-      </div>
 
-      <div id="countdownDisplay" class="time">00:05:00</div>
-
-      <div class="btns">
-        <button class="action secondary" onclick="setCountdown()">设置时间</button>
-        <button id="countdownBtn" class="action primary" onclick="toggleCountdown()">开始</button>
-        <button class="action secondary" onclick="resetCountdown()">重置</button>
-      </div>
-
-      <div class="progress-wrap">
-        <div id="progressBar" class="progress"></div>
-      </div>
-
-      <div id="countdownTip" class="tip">专注进行中</div>
+        <div class="card">
+          <div class="memo-head">
+            <div>
+              <div class="card-title">竹林记事本</div>
+              <div class="sub-note">可以写待办、灵感、碎碎念，也支持多条保存与删除。</div>
+            </div>
+            <div class="memo-actions">
+              <button class="small" id="saveMemoBtn">保存笔记</button>
+              <button class="danger" id="clearMemosBtn">清空全部笔记</button>
+            </div>
+          </div>
+          <div class="grid">
+            <input class="memo-input" id="memoTitle" type="text" placeholder="给这条笔记起个标题，例如：今天要做什么" />
+            <textarea class="memo-textarea" id="memoContent" placeholder="在这里写点东西……"></textarea>
+            <div class="memo-list" id="memoList"></div>
+          </div>
+        </div>
+      </section>
     </div>
   </div>
 
   <script>
-    function switchTab(tabId) {
-      document.querySelectorAll(".tab").forEach(btn => btn.classList.remove("active"));
-      document.querySelectorAll(".panel").forEach(panel => panel.classList.remove("active"));
+    function makeBamboo(containerId, positions, layer) {
+      const root = document.getElementById(containerId);
+      positions.forEach((left, i) => {
+        const stalk = document.createElement('div');
+        stalk.className = `stalk ${layer}`;
+        stalk.style.left = left + '%';
+        stalk.style.height = (88 + (i % 4) * 10 + (layer === 'front' ? 18 : 0)) + 'vh';
+        stalk.style.width = (layer === 'front' ? 14 + (i % 4) * 2 : 10 + (i % 3) * 2) + 'px';
+        stalk.style.opacity = layer === 'front' ? 0.42 + (i % 5) * 0.1 : 0.18 + (i % 4) * 0.08;
+        stalk.style.animationDelay = (i * 0.45) + 's';
 
-      if (tabId === "stopwatch") {
-        document.querySelectorAll(".tab")[0].classList.add("active");
-      } else {
-        document.querySelectorAll(".tab")[1].classList.add("active");
-      }
+        for (let j = 0; j < 5; j++) {
+          const leafL = document.createElement('div');
+          leafL.className = `leaf ${layer}`;
+          leafL.style.left = (-74 - (j % 2) * 10) + 'px';
+          leafL.style.top = (70 + j * 82) + 'px';
+          leafL.style.transform = `rotate(${-26 - j * 4}deg)`;
+          leafL.style.width = (68 + (j % 3) * 10) + 'px';
+          stalk.appendChild(leafL);
 
-      document.getElementById(tabId).classList.add("active");
+          const leafR = document.createElement('div');
+          leafR.className = `leaf ${layer}`;
+          leafR.style.left = '12px';
+          leafR.style.top = (102 + j * 82) + 'px';
+          leafR.style.transform = `scaleX(-1) rotate(${-18 + j * 4}deg)`;
+          leafR.style.width = (72 + (j % 2) * 12) + 'px';
+          stalk.appendChild(leafR);
+        }
+
+        root.appendChild(stalk);
+      });
     }
+
+    makeBamboo('bambooBack', [2, 10, 18, 31, 43, 57, 68, 80, 92], 'back');
+    makeBamboo('bambooFront', [6, 14, 24, 36, 50, 61, 74, 86, 96], 'front');
+
+    const fallingLeaves = document.getElementById('fallingLeaves');
+    for (let i = 0; i < 18; i++) {
+      const leaf = document.createElement('div');
+      leaf.className = 'fall-leaf';
+      leaf.style.left = (Math.random() * 100) + '%';
+      leaf.style.top = (-10 - Math.random() * 30) + 'vh';
+      leaf.style.animationDuration = (12 + Math.random() * 10) + 's';
+      leaf.style.animationDelay = (-Math.random() * 18) + 's';
+      leaf.style.setProperty('--drift', `${-80 + Math.random() * 160}px`);
+      fallingLeaves.appendChild(leaf);
+    }
+
+    const tabs = document.querySelectorAll('.tab');
+    const mainLabel = document.getElementById('mainLabel');
+    const mainDisplay = document.getElementById('mainDisplay');
+    const moneyDisplay = document.getElementById('moneyDisplay');
+    const statusText = document.getElementById('statusText');
+    const footerNote = document.getElementById('footerNote');
+    const progressWrap = document.getElementById('progressWrap');
+    const progressBar = document.getElementById('progressBar');
+    const mainBtn = document.getElementById('mainBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const presetBtn = document.getElementById('presetBtn');
+    const saveRecordBtn = document.getElementById('saveRecordBtn');
+    const saveCurrentRecordBtn = document.getElementById('saveCurrentRecordBtn');
+    const clearRecordsBtn = document.getElementById('clearRecordsBtn');
+    const hourlyWageInput = document.getElementById('hourlyWage');
+    const currencyInput = document.getElementById('currencySymbol');
+    const perMinute = document.getElementById('perMinute');
+    const perSecond = document.getElementById('perSecond');
+    const workPanel = document.getElementById('workPanel');
+    const countdownPanel = document.getElementById('countdownPanel');
+    const recordsList = document.getElementById('recordsList');
+
+    const cdHour = document.getElementById('cdHour');
+    const cdMinute = document.getElementById('cdMinute');
+    const cdSecond = document.getElementById('cdSecond');
+    const setCountdownBtn = document.getElementById('setCountdownBtn');
+    const focus25Btn = document.getElementById('focus25Btn');
+    const remainText = document.getElementById('remainText');
+    const progressText = document.getElementById('progressText');
+
+    const memoTitle = document.getElementById('memoTitle');
+    const memoContent = document.getElementById('memoContent');
+    const memoList = document.getElementById('memoList');
+    const saveMemoBtn = document.getElementById('saveMemoBtn');
+    const clearMemosBtn = document.getElementById('clearMemosBtn');
+
+    let mode = 'work';
+    let workRunning = false;
+    let workStart = 0;
+    let workElapsed = 0;
+    let workTimer = null;
+
+    let cdRunning = false;
+    let cdTotal = 1500;
+    let cdRemaining = 1500;
+    let cdTimer = null;
+
+    let records = [];
+    let memos = [];
 
     function pad(n, len = 2) {
-      return String(n).padStart(len, "0");
+      return String(n).padStart(len, '0');
     }
-
-    // 正计时
-    let stopwatchRunning = false;
-    let stopwatchStart = 0;
-    let stopwatchElapsed = 0;
-    let stopwatchTimer = null;
 
     function formatStopwatch(ms) {
       const totalSeconds = Math.floor(ms / 1000);
       const hours = Math.floor(totalSeconds / 3600);
       const minutes = Math.floor((totalSeconds % 3600) / 60);
       const seconds = totalSeconds % 60;
-      const centiseconds = Math.floor((ms % 1000) / 10);
-      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(centiseconds)}`;
+      const cs = Math.floor((ms % 1000) / 10);
+      return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}.${pad(cs)}`;
     }
 
-    function updateStopwatch() {
-      const now = Date.now();
-      stopwatchElapsed = now - stopwatchStart;
-      document.getElementById("stopwatchDisplay").textContent = formatStopwatch(stopwatchElapsed);
-    }
-
-    function toggleStopwatch() {
-      const btn = document.getElementById("startPauseBtn");
-
-      if (!stopwatchRunning) {
-        stopwatchRunning = true;
-        stopwatchStart = Date.now() - stopwatchElapsed;
-        stopwatchTimer = setInterval(updateStopwatch, 10);
-        btn.textContent = "暂停";
-      } else {
-        stopwatchRunning = false;
-        clearInterval(stopwatchTimer);
-        btn.textContent = "继续";
-      }
-    }
-
-    function resetStopwatch() {
-      stopwatchRunning = false;
-      clearInterval(stopwatchTimer);
-      stopwatchElapsed = 0;
-      document.getElementById("stopwatchDisplay").textContent = "00:00:00.00";
-      document.getElementById("startPauseBtn").textContent = "开始";
-    }
-
-    // 倒计时
-    let countdownRunning = false;
-    let countdownTimer = null;
-    let totalCountdownSeconds = 300;
-    let remainingSeconds = 300;
-
-    function formatCountdown(sec) {
-      const h = Math.floor(sec / 3600);
-      const m = Math.floor((sec % 3600) / 60);
-      const s = sec % 60;
+    function formatHMS(sec) {
+      const safe = Math.max(0, sec);
+      const h = Math.floor(safe / 3600);
+      const m = Math.floor((safe % 3600) / 60);
+      const s = safe % 60;
       return `${pad(h)}:${pad(m)}:${pad(s)}`;
     }
 
-    function updateCountdownDisplay() {
-      document.getElementById("countdownDisplay").textContent = formatCountdown(remainingSeconds);
-
-      const progress = totalCountdownSeconds > 0
-        ? ((totalCountdownSeconds - remainingSeconds) / totalCountdownSeconds) * 100
-        : 0;
-
-      document.getElementById("progressBar").style.width = progress + "%";
-
-      document.getElementById("countdownTip").textContent =
-        remainingSeconds === 0 ? "时间到" : "专注进行中";
+    function getCurrency() {
+      return (currencyInput.value || '¥').trim() || '¥';
     }
 
-    function setCountdown() {
-      const h = parseInt(document.getElementById("hours").value) || 0;
-      const m = parseInt(document.getElementById("minutes").value) || 0;
-      const s = parseInt(document.getElementById("seconds").value) || 0;
-
-      totalCountdownSeconds = h * 3600 + m * 60 + s;
-      remainingSeconds = totalCountdownSeconds;
-
-      countdownRunning = false;
-      clearInterval(countdownTimer);
-      document.getElementById("countdownBtn").textContent = "开始";
-      updateCountdownDisplay();
+    function getWage() {
+      return Math.max(0, parseFloat(hourlyWageInput.value) || 0);
     }
 
-    function toggleCountdown() {
-      const btn = document.getElementById("countdownBtn");
+    function nowText() {
+      const d = new Date();
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    }
 
-      if (remainingSeconds <= 0) {
-        setCountdown();
-      }
+    function updateRatePreview() {
+      const wage = getWage();
+      const cur = getCurrency();
+      perMinute.textContent = `${cur}${(wage / 60).toFixed(2)}`;
+      perSecond.textContent = `${cur}${(wage / 3600).toFixed(4)}`;
+      if (mode === 'work') updateWorkDisplay();
+    }
 
-      if (!countdownRunning) {
-        if (remainingSeconds <= 0) return;
-        countdownRunning = true;
-        btn.textContent = "暂停";
-
-        countdownTimer = setInterval(() => {
-          if (remainingSeconds > 0) {
-            remainingSeconds--;
-            updateCountdownDisplay();
-          } else {
-            clearInterval(countdownTimer);
-            countdownRunning = false;
-            btn.textContent = "开始";
-            alert("时间到！");
-          }
-        }, 1000);
+    function updateWorkDisplay() {
+      mainDisplay.textContent = formatStopwatch(workElapsed);
+      const wage = getWage();
+      const earned = wage * (workElapsed / 3600000);
+      moneyDisplay.innerHTML = `${getCurrency()}${earned.toFixed(2)} <small>工资随时间上升</small>`;
+      if (workRunning) {
+        statusText.textContent = `状态：正在上班中。工时正在累计，当前按 ${getCurrency()}${wage.toFixed(2)}/小时 实时结算。`;
       } else {
-        countdownRunning = false;
-        clearInterval(countdownTimer);
-        btn.textContent = "继续";
+        statusText.textContent = `状态：已暂停或未开始。当前已累计 ${formatStopwatch(workElapsed)}，工资会在继续后接着增长。`;
       }
+    }
+
+    function startWork() {
+      workRunning = true;
+      workStart = Date.now() - workElapsed;
+      mainBtn.textContent = '暂停上班';
+      workTimer = setInterval(() => {
+        workElapsed = Date.now() - workStart;
+        updateWorkDisplay();
+      }, 30);
+      updateWorkDisplay();
+    }
+
+    function pauseWork() {
+      workRunning = false;
+      clearInterval(workTimer);
+      mainBtn.textContent = '继续上班';
+      updateWorkDisplay();
+    }
+
+    function resetWork() {
+      workRunning = false;
+      clearInterval(workTimer);
+      workElapsed = 0;
+      mainBtn.textContent = '开始上班';
+      updateWorkDisplay();
+    }
+
+    function applyCountdownSettings() {
+      const h = Math.max(0, parseInt(cdHour.value) || 0);
+      const m = Math.max(0, parseInt(cdMinute.value) || 0);
+      const s = Math.max(0, parseInt(cdSecond.value) || 0);
+      cdTotal = h * 3600 + m * 60 + s;
+      cdRemaining = cdTotal;
+      cdRunning = false;
+      clearInterval(cdTimer);
+      updateCountdownDisplay();
+      mainBtn.textContent = '开始倒计时';
+      statusText.textContent = '状态：倒计时已设置完成，点击开始即可运行。';
+    }
+
+    function updateCountdownDisplay() {
+      mainDisplay.textContent = formatHMS(cdRemaining);
+      remainText.textContent = formatHMS(cdRemaining);
+      moneyDisplay.innerHTML = `${getCurrency()}0.00 <small>倒计时模式不累计工资</small>`;
+      const progress = cdTotal > 0 ? ((cdTotal - cdRemaining) / cdTotal) * 100 : 0;
+      progressBar.style.width = progress + '%';
+      progressText.textContent = `${Math.round(progress)}%`;
+      if (cdRemaining === 0 && cdTotal > 0) {
+        statusText.textContent = '状态：倒计时结束，时间到。';
+      }
+    }
+
+    function startCountdown() {
+      if (cdRemaining <= 0) applyCountdownSettings();
+      if (cdRemaining <= 0) return;
+      cdRunning = true;
+      mainBtn.textContent = '暂停倒计时';
+      statusText.textContent = '状态：倒计时进行中。';
+      cdTimer = setInterval(() => {
+        if (cdRemaining > 0) {
+          cdRemaining--;
+          updateCountdownDisplay();
+        } else {
+          clearInterval(cdTimer);
+          cdRunning = false;
+          mainBtn.textContent = '重新开始';
+          updateCountdownDisplay();
+          alert('时间到啦！');
+        }
+      }, 1000);
+    }
+
+    function pauseCountdown() {
+      cdRunning = false;
+      clearInterval(cdTimer);
+      mainBtn.textContent = '继续倒计时';
+      statusText.textContent = '状态：倒计时已暂停。';
     }
 
     function resetCountdown() {
-      countdownRunning = false;
-      clearInterval(countdownTimer);
-      remainingSeconds = totalCountdownSeconds;
-      document.getElementById("countdownBtn").textContent = "开始";
+      cdRunning = false;
+      clearInterval(cdTimer);
+      cdRemaining = cdTotal;
+      mainBtn.textContent = '开始倒计时';
       updateCountdownDisplay();
+      statusText.textContent = '状态：倒计时已重置。';
     }
 
-    updateCountdownDisplay();
+    function saveData() {
+      localStorage.setItem('bamboo_records_v2', JSON.stringify(records));
+      localStorage.setItem('bamboo_memos_v2', JSON.stringify(memos));
+    }
+
+    function loadData() {
+      try {
+        records = JSON.parse(localStorage.getItem('bamboo_records_v2') || '[]');
+        memos = JSON.parse(localStorage.getItem('bamboo_memos_v2') || '[]');
+      } catch (e) {
+        records = [];
+        memos = [];
+      }
+    }
+
+    function renderRecords() {
+      if (!records.length) {
+        recordsList.innerHTML = `<div class="empty">还没有保存任何工时记录。开始计时后，点“保存本次记录”就会出现在这里。</div>`;
+        return;
+      }
+      recordsList.innerHTML = records.map((item, index) => `
+        <div class="record-item">
+          <div class="record-top">
+            <div>
+              <div class="record-badge">${item.modeLabel}</div>
+              <div class="record-money">${item.moneyText}</div>
+            </div>
+            <div class="record-actions">
+              <button class="small" onclick="deleteRecord(${index})">删除</button>
+            </div>
+          </div>
+          <div class="record-meta">
+            时间：${item.timeText}<br>
+            收入设置：${item.wageText}<br>
+            保存时间：${item.savedAt}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderMemos() {
+      if (!memos.length) {
+        memoList.innerHTML = `<div class="empty">还没有保存任何笔记。你可以先写点东西，再点击“保存笔记”。</div>`;
+        return;
+      }
+      memoList.innerHTML = memos.map((item, index) => `
+        <div class="memo-item">
+          <div class="memo-top">
+            <div class="memo-badge">${item.title || '未命名笔记'}</div>
+            <div class="memo-actions">
+              <button class="small" onclick="fillMemo(${index})">回填</button>
+              <button class="small" onclick="deleteMemo(${index})">删除</button>
+            </div>
+          </div>
+          <div class="memo-body">${item.content.replace(/\n/g, '<br>')}</div>
+          <div class="record-meta" style="margin-top:8px;">保存时间：${item.savedAt}</div>
+        </div>
+      `).join('');
+    }
+
+    function saveCurrentRecord() {
+      const cur = getCurrency();
+      if (mode === 'work') {
+        if (workElapsed <= 0) {
+          alert('当前还没有可保存的工时记录。');
+          return;
+        }
+        const wage = getWage();
+        const earned = wage * (workElapsed / 3600000);
+        records.unshift({
+          modeLabel: '上班计时',
+          moneyText: `${cur}${earned.toFixed(2)}`,
+          timeText: formatStopwatch(workElapsed),
+          wageText: `${cur}${wage.toFixed(2)}/小时`,
+          savedAt: nowText()
+        });
+      } else {
+        const used = Math.max(0, cdTotal - cdRemaining);
+        if (cdTotal <= 0) {
+          alert('请先设置倒计时。');
+          return;
+        }
+        records.unshift({
+          modeLabel: '倒计时',
+          moneyText: `${cur}0.00`,
+          timeText: `已进行 ${formatHMS(used)} / 总时长 ${formatHMS(cdTotal)}`,
+          wageText: '倒计时模式不计算工资',
+          savedAt: nowText()
+        });
+      }
+      saveData();
+      renderRecords();
+    }
+
+    function saveMemo() {
+      const title = memoTitle.value.trim();
+      const content = memoContent.value.trim();
+      if (!title && !content) {
+        alert('先写一点内容再保存吧。');
+        return;
+      }
+      memos.unshift({
+        title,
+        content,
+        savedAt: nowText()
+      });
+      memoTitle.value = '';
+      memoContent.value = '';
+      saveData();
+      renderMemos();
+    }
+
+    function switchMode(nextMode) {
+      mode = nextMode;
+      tabs.forEach(tab => tab.classList.toggle('active', tab.dataset.mode === nextMode));
+
+      if (nextMode === 'work') {
+        clearInterval(cdTimer);
+        cdRunning = false;
+        mainLabel.textContent = '当前工时';
+        workPanel.style.display = 'grid';
+        countdownPanel.classList.remove('active');
+        progressWrap.style.display = 'none';
+        mainBtn.textContent = workRunning ? '暂停上班' : (workElapsed > 0 ? '继续上班' : '开始上班');
+        footerNote.textContent = '小提示：正计时模式下，工资会根据你输入的时薪实时增长，适合娱乐式模拟上班与工时记录。';
+        updateWorkDisplay();
+      } else {
+        clearInterval(workTimer);
+        workRunning = false;
+        mainLabel.textContent = '剩余时间';
+        workPanel.style.display = 'none';
+        countdownPanel.classList.add('active');
+        progressWrap.style.display = 'block';
+        mainBtn.textContent = cdRunning ? '暂停倒计时' : '开始倒计时';
+        footerNote.textContent = '小提示：倒计时模式适合专注、休息和番茄钟，进度条会随剩余时间变化。';
+        updateCountdownDisplay();
+      }
+    }
+
+    tabs.forEach(tab => tab.addEventListener('click', () => switchMode(tab.dataset.mode)));
+
+    mainBtn.addEventListener('click', () => {
+      if (mode === 'work') {
+        workRunning ? pauseWork() : startWork();
+      } else {
+        cdRunning ? pauseCountdown() : startCountdown();
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if (mode === 'work') {
+        resetWork();
+      } else {
+        resetCountdown();
+      }
+    });
+
+    presetBtn.addEventListener('click', () => {
+      hourlyWageInput.value = '35';
+      updateRatePreview();
+    });
+
+    saveRecordBtn.addEventListener('click', saveCurrentRecord);
+    saveCurrentRecordBtn.addEventListener('click', saveCurrentRecord);
+    saveMemoBtn.addEventListener('click', saveMemo);
+
+    clearRecordsBtn.addEventListener('click', () => {
+      if (!records.length) return;
+      if (confirm('确定要清空全部工时记录吗？')) {
+        records = [];
+        saveData();
+        renderRecords();
+      }
+    });
+
+    clearMemosBtn.addEventListener('click', () => {
+      if (!memos.length) return;
+      if (confirm('确定要清空全部笔记吗？')) {
+        memos = [];
+        saveData();
+        renderMemos();
+      }
+    });
+
+    hourlyWageInput.addEventListener('input', updateRatePreview);
+    currencyInput.addEventListener('input', updateRatePreview);
+    setCountdownBtn.addEventListener('click', applyCountdownSettings);
+    focus25Btn.addEventListener('click', () => {
+      cdHour.value = 0;
+      cdMinute.value = 25;
+      cdSecond.value = 0;
+      applyCountdownSettings();
+    });
+
+    window.deleteRecord = function(index) {
+      records.splice(index, 1);
+      saveData();
+      renderRecords();
+    };
+
+    window.deleteMemo = function(index) {
+      memos.splice(index, 1);
+      saveData();
+      renderMemos();
+    };
+
+    window.fillMemo = function(index) {
+      const item = memos[index];
+      if (!item) return;
+      memoTitle.value = item.title || '';
+      memoContent.value = item.content || '';
+      memoTitle.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    loadData();
+    renderRecords();
+    renderMemos();
+    updateRatePreview();
+    updateWorkDisplay();
+    applyCountdownSettings();
+    switchMode('work');
   </script>
 </body>
 </html>
